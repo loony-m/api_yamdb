@@ -5,6 +5,7 @@ import django.db.models.deletion
 import reviews.validators
 
 
+
 class Migration(migrations.Migration):
 
     initial = True
@@ -53,5 +54,28 @@ class Migration(migrations.Migration):
                 'verbose_name': 'Произведение',
                 'verbose_name_plural': 'Произведения',
             },
+            name='Comment',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('text', models.TextField(unique=True, verbose_name='Текст комментария')),
+                ('author', models.IntegerField(unique=True, verbose_name='Автор')),
+                ('review', models.IntegerField(unique=True, verbose_name='Отзыв')),
+                ('pub_date', models.DateTimeField(auto_now_add=True, verbose_name='Дата создания')),
+            ],
+        ),
+        migrations.CreateModel(
+            name='Review',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('text', models.TextField(unique=True, verbose_name='Текст отзыва')),
+                ('author', models.IntegerField(unique=True, verbose_name='Автор')),
+                ('title', models.IntegerField(unique=True, verbose_name='Произведение')),
+                ('score', models.IntegerField(unique=True, verbose_name='Оценка')),
+                ('pub_date', models.DateTimeField(auto_now_add=True, verbose_name='Дата создания')),
+            ],
+        ),
+        migrations.AddConstraint(
+            model_name='review',
+            constraint=models.UniqueConstraint(fields=('author', 'title'), name='unique_author_title'),
         ),
     ]
