@@ -22,7 +22,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'api',
-    'reviews'
+    'reviews',
     'users.apps.UsersConfig',
 ]
 
@@ -85,6 +85,8 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+
+AUTH_USER_MODEL = 'users.User'
 
 # Internationalization
 
