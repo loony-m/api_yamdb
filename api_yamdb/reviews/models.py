@@ -1,4 +1,6 @@
 from django.db import models
+from .validators import check_year
+
 from django.db.models import UniqueConstraint
 
 
@@ -88,9 +90,13 @@ class Title(models.Model):
     genre = models.ManyToManyField(Genre, verbose_name='Жанр')
     category = models.ForeignKey(Categories, on_delete=models.SET_NULL,
                                  null=True, verbose_name='Категория')
-    year = models.IntegerField(verbose_name='Год')
+    year = models.IntegerField(verbose_name='Год',
+                               validators=[check_year])
     description = models.TextField(blank=True, verbose_name='Описание')
 
     class Meta:
         verbose_name = 'Произведение'
         verbose_name_plural = 'Произведения'
+
+    def __str__(self):
+        return self.name
