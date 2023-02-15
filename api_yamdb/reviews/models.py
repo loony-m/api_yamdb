@@ -25,7 +25,7 @@ class Genre(models.Model):
         verbose_name_plural = 'Жанры'
 
 
-class Tittle(models.Model):
+class Title(models.Model):
     """Произведения"""
     """В ТЗ написано: При удалении объекта категории Category не нужно
      **удалять связанные с этой категорией произведения.(с)
