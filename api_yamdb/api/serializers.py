@@ -1,6 +1,22 @@
-from reviews.models import Genre, Categories, Title
 from rest_framework import serializers
+from reviews.models import Review, Comment, Genre, Categories, Title
 from reviews.validators import check_year
+
+
+class ReviewSerializer(serializers.ModelSerializer):
+    author = serializers.StringRelatedField(read_only=True)
+
+    class Meta:
+        fields = ('id', 'text', 'author', 'score', 'pub_date')
+        model = Review
+
+
+class CommentSerializer(serializers.ModelSerializer):
+    author = serializers.StringRelatedField(read_only=True)
+
+    class Meta:
+        fields = ('id', 'text', 'author', 'pub_date')
+        model = Comment
 
 
 class CategoriesSerializer(serializers.ModelSerializer):
