@@ -6,19 +6,15 @@ class Review(models.Model):
     """ Отзывы """
     # todo: изменить на ForeignKey и добавить on_delete
     text = models.TextField(
-        blank=True,
         verbose_name='Текст отзыва'
     )
     author = models.IntegerField(
-        blank=True,
         verbose_name='Автор'
     )
     title = models.IntegerField(
-        blank=True,
         verbose_name='Произведение'
     )
     score = models.IntegerField(
-        blank=True,
         verbose_name='Оценка'
     )
     pub_date = models.DateTimeField(
@@ -42,15 +38,12 @@ class Comment(models.Model):
     """ Комментарии к отзывам """
     # todo: изменить на ForeignKey и добавить on_delete
     text = models.TextField(
-        blank=True,
         verbose_name='Текст комментария'
     )
     author = models.IntegerField(
-        blank=True,
         verbose_name='Автор'
     )
     review = models.IntegerField(
-        blank=True,
         verbose_name='Отзыв'
     )
     pub_date = models.DateTimeField(
