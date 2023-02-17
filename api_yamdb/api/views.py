@@ -1,15 +1,27 @@
+
+from django.core.mail import send_mail
 from rest_framework import viewsets
 from rest_framework.pagination import LimitOffsetPagination
+from rest_framework import filters, mixins, permissions, status, viewsets
 from django.shortcuts import get_object_or_404
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from api.serializers import (ReviewSerializer,
                              CommentSerializer,
                              CategoriesSerializer,
                              GenreSerializer,
                              TitleSerializerGet,
-                             TitleSerializerPost)
+                             UserMeSerializer,
+                             UserSerializer,
+                             UserSignUpSerializer,
+                             UserTokenSerializer)
+from api.permissions import (IsAdminOnlyPermission,
+                             SelfEditUserOnlyPermission)
 from reviews.models import (Title, Review,Categories,
                             Genre,Title)
+from users.models import User
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
@@ -47,6 +59,101 @@ class CommentViewSet(viewsets.ModelViewSet):
         review = self.get_review()
 
         serializer.save(author=self.request.user, review=review)
+
+
+class UserViewSet(viewsets.ModelViewSet):
+    """
+    Работает над всеми операциями с пользователями от лица админа.
+    Позволяет обычному пользователю редактировать свой профиль.
+    """
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    lookup_field = 'username'
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('username',)
+    permission_classes = (IsAdminOnlyPermission,)
+    http_method_names = ['get', 'post', 'patch', 'delete']
+
+    @action(
+        methods=['get', 'patch'], detail=False,
+        url_path='me', permission_classes=(SelfEditUserOnlyPermission,)
+    )
+    def me_user(self, request):
+        if request.method == 'GET':
+            user = User.objects.get(username=request.user)
+            serializer = self.get_serializer(user)
+            return Response(serializer.data)
+
+        user = User.objects.get(username=request.user)
+        serializer = UserMeSerializer(user, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class SignUpViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
+    """
+    Регистрация пользователя с отправкой confirmation_code на электронную
+    почту пользователя
+    А также в случае, если пользователя зарегистрировал администратор.
+    """
+    permission_classes = (permissions.AllowAny,)
+
+    def create(self, request):
+        serializer = UserSignUpSerializer(data=request.data)
+        if (User.objects.filter(username=request.data.get('username'),
+                                email=request.data.get('email'))):
+            user = User.objects.get(username=request.data.get('username'))
+            serializer = UserSignUpSerializer(user, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            username = request.data.get('username')
+            user = User.objects.get(username=username)
+            code = user.confirmation_code
+            send_mail(
+                f'Код для получения токена для {user.username}',
+                (f'Скопируйте этот confirmation_code: {code} '
+                 f'для получения  токена по адресу api/v1/auth/token/'),
+                'admin_yamdb@yandex.ru',
+                [request.data.get('email')],
+                fail_silently=False,
+            )
+            return Response(
+                serializer.data, status=status.HTTP_200_OK
+            )
+        return Response(
+            serializer.errors, status=status.HTTP_400_BAD_REQUEST
+        )
+
+
+class TokenViewSet(viewsets.ViewSet):
+    """
+    Даем токен зарегистрированному пользователю
+    """
+    permission_classes = (permissions.AllowAny,)
+
+    def create(self, request):
+        context = 'Проверьте confirmation_code'
+        serializer = UserTokenSerializer(data=request.data)
+        if serializer.is_valid():
+            user = get_object_or_404(
+                User, username=request.data.get('username')
+            )
+            if str(user.confirmation_code) == request.data.get(
+                'confirmation_code'
+            ):
+                refresh = RefreshToken.for_user(user)
+                token = {'token': str(refresh.access_token)}
+                return Response(
+                    token, status=status.HTTP_200_OK
+                )
+            return Response(
+                context, status=status.HTTP_400_BAD_REQUEST
+            )
+        return Response(
+            serializer.errors, status=status.HTTP_400_BAD_REQUEST
+        )
 
 
 class CategoriesViewSet(viewsets.ModelViewSet):

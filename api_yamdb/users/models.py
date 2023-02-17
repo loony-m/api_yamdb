@@ -11,7 +11,8 @@ class User(AbstractUser):
     )
     email = models.EmailField(
         'Адрес электронной почты',
-        unique=True
+        unique=True,
+        max_length=254,
     )
     role = models.CharField(
         'Роль пользователя',
@@ -31,7 +32,18 @@ class User(AbstractUser):
         unique=True
     )
 
+    @property
+    def is_admin(self):
+        return self.is_staff or self.role == 'admin'
+
+    @property
+    def is_moderator(self):
+        return self.role == 'moderator'
+
     class Meta:
         ordering = ('-id', )
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
+
+    def __str__(self) -> str:
+        return self.username
