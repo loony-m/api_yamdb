@@ -1,6 +1,8 @@
+from django.contrib.auth.validators import UnicodeUsernameValidator
 from rest_framework import serializers
 from reviews.models import Review, Comment, Genre, Categories, Title
 from reviews.validators import check_year
+from users.models import User
 
 
 class ReviewSerializer(serializers.ModelSerializer):
@@ -47,5 +49,63 @@ class TitleSerializerGet(serializers.ModelSerializer):
 
 class TitleSerializerPost(serializers.ModelSerializer):
     """Сериализатор Title Post-запросов"""
-    """Еще бы понять, как это писать..."""
-    pass
+    genre = serializers.SlugRelatedField(
+       many=True,
+       slug_field='slug',
+       queryset=Genre.objects.all()
+    )
+    category = serializers.SlugRelatedField(
+        slug_field='slug',
+        queryset=Categories.objects.all()
+    )
+
+    class Meta:
+        fields = '__all__'
+        model = Title
+
+
+class UserSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = (
+            'username', 'email', 'first_name', 'last_name', 'bio', 'role'
+        )
+
+    def validate_username(self, value):
+        if (value == 'me'):
+            raise serializers.ValidationError(
+                'Запрещено использовать me в качестве username'
+            )
+        return value
+
+
+class UserSignUpSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = ('email', 'username')
+
+    def validate_username(self, value):
+        if (value == 'me'):
+            raise serializers.ValidationError(
+                'Запрещено использовать me в качестве username'
+            )
+        return value
+
+
+class UserMeSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = (
+            'username', 'email', 'first_name', 'last_name', 'bio', 'role'
+        )
+        read_only_fields = ('role',)
+
+
+class UserTokenSerializer(serializers.Serializer):
+    username = serializers.CharField(
+        max_length=150, validators=[UnicodeUsernameValidator, ]
+    )
+    confirmation_code = serializers.CharField()

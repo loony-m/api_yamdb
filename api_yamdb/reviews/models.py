@@ -1,6 +1,8 @@
 from django.contrib.auth import get_user_model
 from django.db import models
 from .validators import check_year
+from django.core.validators import (MinValueValidator,
+                                    MaxValueValidator)
 
 from django.db.models import UniqueConstraint
 
@@ -18,6 +20,9 @@ class Categories(models.Model):
         verbose_name = 'Категория'
         verbose_name_plural = 'Категории'
 
+    def __str__(self):
+        return self.name
+
 
 class Genre(models.Model):
     """Жанры для произведений"""
@@ -30,12 +35,12 @@ class Genre(models.Model):
         verbose_name = 'Жанр'
         verbose_name_plural = 'Жанры'
 
+    def __str__(self):
+        return self.name
+
 
 class Title(models.Model):
     """Произведения"""
-    """В ТЗ написано: При удалении объекта категории Category не нужно
-     **удалять связанные с этой категорией произведения.(с)
-     по идее я описал верно удаление, но проверьте."""
     name = models.CharField(max_length=256, verbose_name='имя')
     genre = models.ManyToManyField(Genre, verbose_name='Жанр')
     category = models.ForeignKey(Categories, on_delete=models.SET_NULL,
@@ -50,6 +55,20 @@ class Title(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class GenreTitle(models.Model):
+    """Класс, объединяющий Жанры и Произведения"""
+    genre_id = models.ForeignKey(
+        Genre,
+        on_delete=models.CASCADE,
+        verbose_name='ID жанра'
+    )
+    title_id = models.ForeignKey(
+        Title,
+        on_delete=models.CASCADE,
+        verbose_name='ID произведения'
+    )
 
 
 class Review(models.Model):
@@ -69,6 +88,10 @@ class Review(models.Model):
         related_name='reviews'
     )
     score = models.IntegerField(
+        validators=(MinValueValidator(1),
+                    MaxValueValidator(10)),
+        error_messages={'validators': 'Оценка должна быть от 1 до 10'},
+        default=1,
         verbose_name='Оценка'
     )
     pub_date = models.DateTimeField(
