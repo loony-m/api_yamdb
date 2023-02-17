@@ -49,8 +49,19 @@ class TitleSerializerGet(serializers.ModelSerializer):
 
 class TitleSerializerPost(serializers.ModelSerializer):
     """Сериализатор Title Post-запросов"""
-    """Еще бы понять, как это писать..."""
-    pass
+    genre = serializers.SlugRelatedField(
+       many=True,
+       slug_field='slug',
+       queryset=Genre.objects.all()
+    )
+    category = serializers.SlugRelatedField(
+        slug_field='slug',
+        queryset=Categories.objects.all()
+    )
+
+    class Meta:
+        fields = '__all__'
+        model = Title
 
 
 class UserSerializer(serializers.ModelSerializer):

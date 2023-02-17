@@ -10,13 +10,17 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from api.serializers import (ReviewSerializer,
                              CommentSerializer,
+                             CategoriesSerializer,
+                             GenreSerializer,
+                             TitleSerializerGet,
                              UserMeSerializer,
                              UserSerializer,
                              UserSignUpSerializer,
                              UserTokenSerializer)
 from api.permissions import (IsAdminOnlyPermission,
                              SelfEditUserOnlyPermission)
-from reviews.models import Title, Review
+from reviews.models import (Title, Review,Categories,
+                            Genre,Title)
 from users.models import User
 
 
@@ -150,3 +154,18 @@ class TokenViewSet(viewsets.ViewSet):
         return Response(
             serializer.errors, status=status.HTTP_400_BAD_REQUEST
         )
+
+
+class CategoriesViewSet(viewsets.ModelViewSet):
+    queryset = Categories.objects.all()
+    serializer_class = CategoriesSerializer
+
+
+class GenresViewSet(viewsets.ModelViewSet):
+    queryset = Genre.objects.all()
+    serializer_class = GenreSerializer
+
+
+class TitlesViewSet(viewsets.ModelViewSet):
+    queryset = Title.objects.all()
+    serializer_class = TitleSerializerGet
