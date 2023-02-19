@@ -8,17 +8,22 @@ class CheckAccessReview(permissions.BasePermission):
         if request.method in permissions.SAFE_METHODS:
             return True
 
+        if request.user.is_authenticated:
+            return True
+
         if request.user.is_anonymous:
             raise PermissionDenied('Анонимному пользователю '
-                                   'запрещено создавать запись')
+                                   'запрещено изменять записи')
 
     def has_object_permission(self, request, view, obj):
         if (
             request.method in permissions.SAFE_METHODS
             or obj.author == request.user
         ):
-            raise PermissionDenied('Запрещено редактировать '
-                                   'чужие записи')
+            return True
+
+        if obj.author != request.user:
+            raise PermissionDenied('Нет доступа к чужим записям')
 
 
 class SelfEditUserOnlyPermission(permissions.BasePermission):
