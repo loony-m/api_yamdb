@@ -39,5 +39,5 @@ http://127.0.0.1:8000/redoc/
 
 ## Авторы
 - [Александр Матияка](https://github.com/alexsevv)
-- 
-- 
+- [Максим Краев](https://github.com/loony-m)
+- [Алексей Алексеев](https://github.com/Litandepython)
