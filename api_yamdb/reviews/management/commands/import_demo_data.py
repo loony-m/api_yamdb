@@ -1,5 +1,4 @@
 import csv
-import os
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
@@ -13,9 +12,7 @@ class Command(BaseCommand):
     help = "Команда для импорта жанров из csv"
 
     def data_user(self):
-        path = os.path.join(
-            settings.BASE_DIR, 'static/data/users.csv'
-        )
+        path = (settings.BASE_DIR / 'static/data/users.csv')
 
         with open(path) as file:
             reader = csv.reader(file)
@@ -30,9 +27,7 @@ class Command(BaseCommand):
                 )
 
     def data_genre(self):
-        path = os.path.join(
-            settings.BASE_DIR, 'static/data/genre.csv'
-        )
+        path = (settings.BASE_DIR / 'static/data/genre.csv')
 
         with open(path) as file:
             reader = csv.reader(file)
@@ -45,9 +40,7 @@ class Command(BaseCommand):
                 )
 
     def data_category(self):
-        path = os.path.join(
-            settings.BASE_DIR, 'static/data/category.csv'
-        )
+        path = (settings.BASE_DIR / 'static/data/category.csv')
 
         with open(path) as file:
             reader = csv.reader(file)
@@ -60,9 +53,7 @@ class Command(BaseCommand):
                 )
 
     def data_title(self):
-        path = os.path.join(
-            settings.BASE_DIR, 'static/data/titles.csv'
-        )
+        path = (settings.BASE_DIR / 'static/data/titles.csv')
 
         with open(path) as file:
             reader = csv.reader(file)
@@ -76,9 +67,7 @@ class Command(BaseCommand):
                 )
 
     def data_genre_title(self):
-        path = os.path.join(
-            settings.BASE_DIR, 'static/data/genre_title.csv'
-        )
+        path = (settings.BASE_DIR / 'static/data/genre_title.csv')
 
         with open(path) as file:
             reader = csv.reader(file)
@@ -91,9 +80,7 @@ class Command(BaseCommand):
                 )
 
     def data_review(self):
-        path = os.path.join(
-            settings.BASE_DIR, 'static/data/review.csv'
-        )
+        path = (settings.BASE_DIR / 'static/data/review.csv')
 
         with open(path) as file:
             reader = csv.reader(file)
@@ -109,9 +96,7 @@ class Command(BaseCommand):
                 )
 
     def data_comments(self):
-        path = os.path.join(
-            settings.BASE_DIR, 'static/data/comments.csv'
-        )
+        path = (settings.BASE_DIR / 'static/data/comments.csv')
 
         with open(path) as file:
             reader = csv.reader(file)
