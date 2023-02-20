@@ -75,7 +75,7 @@ class TitleSerializerPost(serializers.ModelSerializer):
 
     def validate(self, data):
         if 'year' in data.keys():
-            if data.get('year')> date.today().year:
+            if data.get('year') > date.today().year:
                 raise serializers.ValidationError(
                     'Год не может быть больше текущего!'
                 )

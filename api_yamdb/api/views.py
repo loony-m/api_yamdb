@@ -33,7 +33,6 @@ from users.models import User
 from .filters import GenreFilter
 
 
-
 class ReviewViewSet(viewsets.ModelViewSet):
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
