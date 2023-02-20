@@ -12,7 +12,7 @@ User = get_user_model()
 class CategoriesAndGenreModel(models.Model):
     """Базовый класс для Категорий и Жанров"""
     name = models.CharField(max_length=256, verbose_name='имя')
-    slug = models.SlugField(unique=True,max_length=50,
+    slug = models.SlugField(unique=True, max_length=50,
                             verbose_name='slug')
 
     class Meta:
