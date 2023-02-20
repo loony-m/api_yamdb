@@ -60,9 +60,9 @@ class TitleSerializerGet(serializers.ModelSerializer):
 class TitleSerializerPost(serializers.ModelSerializer):
     """Сериализатор Title Post-запросов"""
     genre = serializers.SlugRelatedField(
-       many=True,
-       slug_field='slug',
-       queryset=Genre.objects.all()
+        many=True,
+        slug_field='slug',
+        queryset=Genre.objects.all()
     )
     category = serializers.SlugRelatedField(
         slug_field='slug',
@@ -106,6 +106,18 @@ class UserSignUpSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('email', 'username')
+        extra_kwargs = {
+            "username": {
+                "error_messages": {
+                    "required": ("Отсутствует обязательное "
+                                 "поле или оно некорректно")}
+            },
+            "email": {
+                "error_messages": {
+                    "required": ("Отсутствует обязательное "
+                                 "поле или оно некорректно")}
+            }
+        }
 
     def validate_username(self, value):
         if (value == 'me'):
