@@ -24,9 +24,11 @@ from api.serializers import (ReviewSerializer,
                              UserTokenSerializer)
 from api.permissions import (IsAdminOnlyPermission,
                              SelfEditUserOnlyPermission,
-                             CheckAccessReview)
+                             CheckAccessReview,
+                             IsAdminOrReadOnly)
 from reviews.models import (Title, Review, Categories,
                             Genre, Title)
+from .mixins import CreateListDestroyViewSet
 from users.models import User
 from .filters import GenreFilter
 
@@ -166,12 +168,12 @@ class TokenViewSet(viewsets.ViewSet):
         )
 
 
-class CategoriesViewSet(viewsets.ModelViewSet):
+class CategoriesViewSet(CreateListDestroyViewSet):
     queryset = Categories.objects.all()
     serializer_class = CategoriesSerializer
 
 
-class GenresViewSet(viewsets.ModelViewSet):
+class GenresViewSet(CreateListDestroyViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
 
@@ -186,6 +188,7 @@ class TitlesViewSet(viewsets.ModelViewSet):
     ordering_fields = ['name', 'year']
     http_method_names = ['get', 'post', 'delete', 'patch']
     filterset_class = GenreFilter
+    permission_classes = [IsAdminOrReadOnly, ]
 
     def get_serializer_class(self):
         if self.action in ['list', 'retrieve']:
