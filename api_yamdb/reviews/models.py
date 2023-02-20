@@ -9,34 +9,34 @@ from django.db.models import UniqueConstraint
 User = get_user_model()
 
 
-class Categories(models.Model):
-    """Категории для произведений"""
+class CategoriesAndGenreModel(models.Model):
+    """Базовый класс для Категорий и Жанров"""
     name = models.CharField(max_length=256, verbose_name='имя')
-    slug = models.SlugField(unique=True, max_length=50,
+    slug = models.SlugField(unique=True,max_length=50,
                             verbose_name='slug')
 
     class Meta:
+        abstract = True
         ordering = ('name',)
+        verbose_name = 'Базовая модель'
+        verbose_name_plural = 'Базовые модели'
+
+    def __str__(self):
+        return self.name
+
+
+class Categories(CategoriesAndGenreModel):
+    """Категории для произведений"""
+    class Meta(CategoriesAndGenreModel.Meta):
         verbose_name = 'Категория'
         verbose_name_plural = 'Категории'
 
-    def __str__(self):
-        return self.name
 
-
-class Genre(models.Model):
+class Genre(CategoriesAndGenreModel):
     """Жанры для произведений"""
-    name = models.CharField(max_length=256, verbose_name='имя')
-    slug = models.SlugField(unique=True, max_length=50,
-                            verbose_name='slug')
-
-    class Meta:
-        ordering = ('name',)
+    class Meta(CategoriesAndGenreModel.Meta):
         verbose_name = 'Жанр'
         verbose_name_plural = 'Жанры'
-
-    def __str__(self):
-        return self.name
 
 
 class Title(models.Model):
@@ -71,8 +71,8 @@ class GenreTitle(models.Model):
     )
 
 
-class Review(models.Model):
-    """ Отзывы """
+class ReviewAndCommentModel(models.Model):
+    """Базовый класс для Отзывов и Комментариев"""
     text = models.TextField(
         verbose_name='Текст отзыва'
     )
@@ -81,6 +81,21 @@ class Review(models.Model):
         verbose_name='Автор',
         on_delete=models.CASCADE
     )
+    pub_date = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Дата создания'
+    )
+
+    class Meta:
+        abstract = True
+        ordering = ('pub_date',)
+
+    def __str__(self):
+        return self.text
+
+
+class Review(ReviewAndCommentModel):
+    """ Отзывы """
     title = models.ForeignKey(
         Title,
         verbose_name='Произведение',
@@ -94,12 +109,8 @@ class Review(models.Model):
         default=1,
         verbose_name='Оценка'
     )
-    pub_date = models.DateTimeField(
-        auto_now_add=True,
-        verbose_name='Дата создания'
-    )
 
-    class Meta:
+    class Meta(ReviewAndCommentModel.Meta):
         constraints = [
             UniqueConstraint(
                 name='unique_author_title',
@@ -109,34 +120,16 @@ class Review(models.Model):
         verbose_name = 'Отзывы'
         verbose_name_plural = 'Отзывы'
 
-    def __str__(self):
-        return self.text
 
-
-class Comment(models.Model):
+class Comment(ReviewAndCommentModel):
     """ Комментарии к отзывам """
-    text = models.TextField(
-        verbose_name='Текст комментария'
-    )
-    author = models.ForeignKey(
-        User,
-        verbose_name='Автор',
-        on_delete=models.CASCADE
-    )
     review = models.ForeignKey(
         Review,
         verbose_name='Отзыв',
         on_delete=models.CASCADE,
         related_name='comment'
     )
-    pub_date = models.DateTimeField(
-        auto_now_add=True,
-        verbose_name='Дата создания'
-    )
 
-    class Meta:
+    class Meta(ReviewAndCommentModel.Meta):
         verbose_name = 'Комментарии'
         verbose_name_plural = 'Комментарии'
-
-    def __str__(self):
-        return self.text
