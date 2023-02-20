@@ -3,6 +3,7 @@ from rest_framework import serializers
 from reviews.models import Review, Comment, Genre, Categories, Title
 from reviews.validators import check_year
 from users.models import User
+from datetime import date
 
 
 class ReviewSerializer(serializers.ModelSerializer):
@@ -11,6 +12,13 @@ class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         fields = ('id', 'text', 'author', 'score', 'pub_date')
         model = Review
+
+    def validate_score(self, value):
+        if 1 < value < 11:
+            return value
+        raise serializers.ValidationError(
+            'Оценка должна быть от 1 до 10'
+        )
 
 
 class CommentSerializer(serializers.ModelSerializer):
@@ -40,7 +48,9 @@ class TitleSerializerGet(serializers.ModelSerializer):
     genre = GenreSerializer(many=True)
     category = CategoriesSerializer()
     year = serializers.IntegerField(validators=[check_year])
-    # тут нужно будет еще рейтинг написать, пока не придумал
+    rating = serializers.IntegerField(
+        source='reviews__score__avg', read_only=True,
+    )
 
     class Meta:
         fields = '__all__'
@@ -62,6 +72,17 @@ class TitleSerializerPost(serializers.ModelSerializer):
     class Meta:
         fields = '__all__'
         model = Title
+
+    def validate(self, data):
+        if 'year' in data.keys():
+            if data.get('year')> date.today().year:
+                raise serializers.ValidationError(
+                    'Год не может быть больше текущего!'
+                )
+        return data
+
+    def to_representation(self, instance):
+        return TitleSerializerGet(instance).data
 
 
 class UserSerializer(serializers.ModelSerializer):

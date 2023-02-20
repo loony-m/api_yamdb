@@ -7,12 +7,17 @@ from django.shortcuts import get_object_or_404
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.pagination import PageNumberPagination
+from django.db.models import Avg
+from rest_framework.filters import OrderingFilter
+from django_filters.rest_framework import DjangoFilterBackend
 
 from api.serializers import (ReviewSerializer,
                              CommentSerializer,
                              CategoriesSerializer,
                              GenreSerializer,
                              TitleSerializerGet,
+                             TitleSerializerPost,
                              UserMeSerializer,
                              UserSerializer,
                              UserSignUpSerializer,
@@ -23,6 +28,8 @@ from api.permissions import (IsAdminOnlyPermission,
 from reviews.models import (Title, Review, Categories,
                             Genre, Title)
 from users.models import User
+from .filters import GenreFilter
+
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
@@ -170,5 +177,17 @@ class GenresViewSet(viewsets.ModelViewSet):
 
 
 class TitlesViewSet(viewsets.ModelViewSet):
-    queryset = Title.objects.all()
+    """Класс представления произведений."""
+    queryset = Title.objects.all().annotate(
+        Avg('reviews__score')).order_by('name')
+    pagination_class = PageNumberPagination
     serializer_class = TitleSerializerGet
+    filter_backends = [DjangoFilterBackend, OrderingFilter]
+    ordering_fields = ['name', 'year']
+    http_method_names = ['get', 'post', 'delete', 'patch']
+    filterset_class = GenreFilter
+
+    def get_serializer_class(self):
+        if self.action in ['list', 'retrieve']:
+            return TitleSerializerGet
+        return TitleSerializerPost
