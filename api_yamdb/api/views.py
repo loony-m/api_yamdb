@@ -59,7 +59,11 @@ class CommentViewSet(viewsets.ModelViewSet):
     permission_classes = (CheckAccessReview,)
 
     def get_review(self):
-        review = get_object_or_404(Review, pk=self.kwargs.get('review_id'))
+        review = get_object_or_404(
+            Review,
+            pk=self.kwargs.get('review_id'),
+            title=self.kwargs.get('title_id')
+        )
         return review
 
     def get_queryset(self):
@@ -113,29 +117,23 @@ class SignUpViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
 
     def create(self, request):
         serializer = UserSignUpSerializer(data=request.data)
-        if (User.objects.filter(username=request.data.get('username'),
-                                email=request.data.get('email'))):
-            user = User.objects.get(username=request.data.get('username'))
-            serializer = UserSignUpSerializer(user, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            username = request.data.get('username')
-            user = User.objects.get(username=username)
-            code = user.confirmation_code
-            send_mail(
-                f'Код для получения токена для {user.username}',
-                (f'Скопируйте этот confirmation_code: {code} '
-                 f'для получения  токена по адресу api/v1/auth/token/'),
-                'admin_yamdb@yandex.ru',
-                [request.data.get('email')],
-                fail_silently=False,
-            )
-            return Response(
-                serializer.data, status=status.HTTP_200_OK
-            )
-        return Response(
-            serializer.errors, status=status.HTTP_400_BAD_REQUEST
+        serializer.is_valid(raise_exception=True)
+        username = serializer.validated_data.get('username')
+        email = serializer.validated_data.get('email')
+        user, created = User.objects.get_or_create(username=username,
+                                                   email=email)
+        code = user.confirmation_code
+
+        user.save()
+        send_mail(
+            f'Код для получения токена для {user.username}',
+            (f'Скопируйте этот confirmation_code: {code} '
+             f'для получения  токена по адресу api/v1/auth/token/'),
+            'admin_yamdb@yandex.ru',
+            [request.data.get('email')],
+            fail_silently=False,
         )
+        return Response(data=serializer.data, status=status.HTTP_200_OK)
 
 
 class TokenViewSet(viewsets.ViewSet):
@@ -179,7 +177,7 @@ class GenresViewSet(CreateListDestroyViewSet):
 
 class TitlesViewSet(viewsets.ModelViewSet):
     """Класс представления произведений."""
-    queryset = Title.objects.all().annotate(
+    queryset = Title.objects.annotate(
         Avg('reviews__score')).order_by('name')
     pagination_class = PageNumberPagination
     serializer_class = TitleSerializerGet

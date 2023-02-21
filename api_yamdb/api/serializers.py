@@ -94,7 +94,7 @@ class UserSerializer(serializers.ModelSerializer):
         )
 
     def validate_username(self, value):
-        if (value == 'me'):
+        if value == 'me':
             raise serializers.ValidationError(
                 'Запрещено использовать me в качестве username'
             )
@@ -102,6 +102,10 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class UserSignUpSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField(max_length=254, required=True)
+    username = serializers.CharField(
+        max_length=150, validators=[UnicodeUsernameValidator, ], required=True
+    )
 
     class Meta:
         model = User
@@ -119,12 +123,24 @@ class UserSignUpSerializer(serializers.ModelSerializer):
             }
         }
 
-    def validate_username(self, value):
-        if (value == 'me'):
+    def validate(self, data):
+        if data['username'] == 'me':
             raise serializers.ValidationError(
-                'Запрещено использовать me в качестве username'
+                "Запрещено использовать me в качестве username"
             )
-        return value
+        valid_username = UnicodeUsernameValidator()
+        if data.get('username') == valid_username(data.get('username')):
+            raise serializers.ValidationError(
+                "Unexpected pattern"
+            )
+        user = User.objects.filter(username=data.get('username'))
+        email = User.objects.filter(email=data.get('email'))
+        if not user.exists() and email.exists():
+            raise serializers.ValidationError("Недопустимый email")
+        if user.exists() and user.get().email != data.get('email'):
+            raise serializers.ValidationError("Недопустимый email")
+
+        return data
 
 
 class UserMeSerializer(serializers.ModelSerializer):
