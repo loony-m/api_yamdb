@@ -59,7 +59,11 @@ class CommentViewSet(viewsets.ModelViewSet):
     permission_classes = (CheckAccessReview,)
 
     def get_review(self):
-        review = get_object_or_404(Review, pk=self.kwargs.get('review_id'))
+        review = get_object_or_404(
+            Review,
+            pk=self.kwargs.get('review_id'),
+            title=self.kwargs.get('title_id')
+        )
         return review
 
     def get_queryset(self):
@@ -120,7 +124,7 @@ class SignUpViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
         if serializer.is_valid():
             serializer.save()
             username = request.data.get('username')
-            user = User.objects.get(username=username)
+            user = get_object_or_404(User, username=username)
             code = user.confirmation_code
             send_mail(
                 f'Код для получения токена для {user.username}',
@@ -179,7 +183,7 @@ class GenresViewSet(CreateListDestroyViewSet):
 
 class TitlesViewSet(viewsets.ModelViewSet):
     """Класс представления произведений."""
-    queryset = Title.objects.all().annotate(
+    queryset = Title.objects.annotate(
         Avg('reviews__score')).order_by('name')
     pagination_class = PageNumberPagination
     serializer_class = TitleSerializerGet
