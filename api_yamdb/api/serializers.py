@@ -94,7 +94,7 @@ class UserSerializer(serializers.ModelSerializer):
         )
 
     def validate_username(self, value):
-        if (value == 'me'):
+        if value == 'me':
             raise serializers.ValidationError(
                 'Запрещено использовать me в качестве username'
             )
@@ -120,7 +120,7 @@ class UserSignUpSerializer(serializers.ModelSerializer):
         }
 
     def validate_username(self, value):
-        if (value == 'me'):
+        if value == 'me':
             raise serializers.ValidationError(
                 'Запрещено использовать me в качестве username'
             )
