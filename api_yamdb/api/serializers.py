@@ -119,12 +119,26 @@ class UserSignUpSerializer(serializers.ModelSerializer):
             }
         }
 
-    def validate_username(self, value):
-        if value == 'me':
+    # def validate_username(self, value):
+    #     if value == 'me':
+    #         raise serializers.ValidationError(
+    #             'Запрещено использовать me в качестве username'
+    #         )
+    #     return value
+
+    def validate(self, data):
+        if data['username'] == 'me':
             raise serializers.ValidationError(
-                'Запрещено использовать me в качестве username'
+                "Запрещено использовать me в качестве username"
             )
-        return value
+        user = User.objects.filter(username=data.get('username'))
+        email = User.objects.filter(email=data.get('email'))
+        if not user.exists() and email.exists():
+            raise serializers.ValidationError("Недопустимый email")
+        if user.exists() and user.get().email != data.get('email'):
+            raise serializers.ValidationError("Недопустимый юзер")
+
+        return data
 
 
 class UserMeSerializer(serializers.ModelSerializer):
