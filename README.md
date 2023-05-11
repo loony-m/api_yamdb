@@ -1,10 +1,11 @@
 # API для Yatube
 
-
 ## Описание
 Проект позволяет авторизованным пользователям ставить оценки разным произведениям, оставлять комментарии, отзывы к ним.
-Проект реализован на [Django REST framework](https://www.django-rest-framework.org/).
 
+Работа над проектом в команде. Моя часть - views, serializers, команда для импорта данных из csv.
+
+Стек: Django Rest Framework, djoser аутентификация по токену, redoc, pagination, permissions, throttling, django_filters.
 
 ## Как запустить проект:
 
@@ -12,30 +13,28 @@
 ```
 git clone 
 ```
-2. Cоздаем виртуальную среду:
+
+2. Установим и активируем виртуальное окружение
 ```
 python3 -m venv venv
 ```
-3. Активируем виртуальную среду:
 ```
-source venv/bin/activate
+. venv/bin/activate
 ```
-4. Устанавливаем зависимости:
+
+3. Установим зависимости
 ```
 pip install -r requirements.txt
 ```
-5. Запустите dev-сервер:
 
+4. Запустим проект
 ```
 python manage.py runserver
 ```
 
 ## Документация к API:
-
 Здесь описаны все доступные ендпоинты и примеры запросов к ним:
 http://127.0.0.1:8000/redoc/
-
-
 
 ## Авторы
 - [Александр Матияка](https://github.com/alexsevv)
